@@ -15,7 +15,7 @@ local Window = Rayfield:CreateWindow({
     DisableBuildWarnings = false,
     ConfigurationSaving = {Enabled = false},
     Discord = {Enabled = true, Invite = "https://discord.gg/qFXqdYMgw7", RememberJoins = true},
-    KeySystem = true,
+    KeySystem = false,
     KeySettings = {
         Title = "BSK HUB Key",
         Subtitle = "Key Required",
