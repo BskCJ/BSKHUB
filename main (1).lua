@@ -1,7 +1,7 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 -- =========================
--- Window Initialization with Key System
+-- Window Initialization
 -- =========================
 local Window = Rayfield:CreateWindow({
     Name = "BSK UNIVERSAL HUB",
@@ -15,24 +15,7 @@ local Window = Rayfield:CreateWindow({
     DisableBuildWarnings = false,
     ConfigurationSaving = {Enabled = false},
     Discord = {Enabled = true, Invite = "https://discord.gg/qFXqdYMgw7", RememberJoins = true},
-    KeySystem = false,
-    KeySettings = {
-        Title = "BSK HUB Key",
-        Subtitle = "Key Required",
-        Note = "Get your key from the Discord",
-        FileName = "BSKHUBKey",
-        SaveKey = true,
-        Key = "https://pastebin.com/raw/kii8F9UV",
-        Callback = function()
-            if Key == "BSKHUB2025" then
-                print("Key accepted!")
-                return true
-            else
-                warn("Invalid Key! Script will not load.")
-                return false
-            end
-        end
-    }
+    KeySystem = false -- Disabled key system for simplicity
 })
 
 -- =========================
@@ -191,7 +174,7 @@ local AimbotTab = Window:CreateTab("Aimbot", nil)
 local Section = AimbotTab:CreateSection("Aimbot")
 
 local aimbotLoaded = false
-local Aimbot
+local Aimbot = nil
 
 AimbotTab:CreateToggle({
     Name = "Universal Aimbot",
@@ -200,24 +183,34 @@ AimbotTab:CreateToggle({
     Callback = function(Value)
         if Value then
             if not aimbotLoaded then
-                local ok,result = pcall(function()
+                local ok, result = pcall(function()
                     return loadstring(game:HttpGet("https://raw.githubusercontent.com/Exunys/Aimbot-V3/main/src/Aimbot.lua"))()
                 end)
                 if ok and result then
                     Aimbot = result
-                    if type(Aimbot.Load)=="function" then Aimbot.Load() end
+                    if type(Aimbot.Load) == "function" then
+                        Aimbot.Load() -- initialize
+                    end
+                    if Aimbot.Settings then
+                        Aimbot.Settings.Enabled = false -- start disabled
+                    end
                     aimbotLoaded = true
-                else warn("Aimbot failed to load:",result) end
-            else
-                if Aimbot.Settings then Aimbot.Settings.Enabled = true end
+                else
+                    warn("Aimbot failed to load:", result)
+                end
+            end
+            if Aimbot and Aimbot.Settings then
+                Aimbot.Settings.Enabled = true -- enable
             end
         else
-            if Aimbot and Aimbot.Settings then Aimbot.Settings.Enabled = false end
+            if Aimbot and Aimbot.Settings then
+                Aimbot.Settings.Enabled = false -- disable
+            end
         end
     end
 })
 
--- Ensure Aimbot OFF at start
+-- Ensure Aimbot starts OFF
 if Aimbot and Aimbot.Settings then
     Aimbot.Settings.Enabled = false
 end
@@ -238,6 +231,7 @@ MiscTab:CreateToggle({
         clickTpEnabled = Value
     end
 })
+
 UserInputService.InputBegan:Connect(function(input)
     if clickTpEnabled and input.UserInputType == Enum.UserInputType.MouseButton1 then
         local mouse = localPlayer:GetMouse()
@@ -263,6 +257,7 @@ local ESPSection = ESPTab:CreateSection("ESP Menu")
 
 local espEnabled = false
 local espObjects = {}
+
 local function applyESP(character)
     if character and character:FindFirstChild("HumanoidRootPart") then
         local highlight = Instance.new("Highlight")
