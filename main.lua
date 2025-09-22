@@ -27,7 +27,7 @@ local Window = Rayfield:CreateWindow({
 
    KeySystem = true, -- Set this to true to use our key system
    KeySettings = {
-      Title = "BskHub Key System",
+      Title = "🔑BskHub Key System🔑",
       Subtitle = "Key System",
       Note = "Key In Discord", -- Use this to tell the user how to get a key
       FileName = "Key", -- It is recommended to use something unique as other scripts using Rayfield may overwrite your key file
@@ -89,7 +89,7 @@ end)
 
 -- WalkSpeed
 ClientTab:CreateSlider({
-    Name = "WalkSpeed",
+    Name = "🏃WalkSpeed🏃",
     Range = {0,500},
     Increment = 1,
     Suffix = "Speed",
@@ -105,7 +105,7 @@ ClientTab:CreateSlider({
 
 -- JumpPower
 ClientTab:CreateSlider({
-    Name = "JumpPower",
+    Name = "🚀JumpPower🚀",
     Range = {1,500},
     Increment = 1,
     Suffix = "Power",
@@ -157,7 +157,7 @@ local function restoreLighting()
 end
 
 ClientTab:CreateToggle({
-    Name = "Fullbright",
+    Name = "🔦Fullbright🔦",
     CurrentValue = false,
     Flag = "FullbrightToggle",
     Callback = function(Value)
@@ -351,28 +351,28 @@ local GameScriptsTab = Window:CreateTab("GameScripts", nil)
 local Section = GameScriptsTab:CreateSection("KEYLESS/WORKING")
 
 GameScriptsTab:CreateButton({
-   Name = "BladeBall",
+   Name = "⚔️BladeBall⚔️",
    Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/Akash1al/Blade-Ball-Updated-Script/refs/heads/main/Blade-Ball-Script"))()
    end,
 })
 
 GameScriptsTab:CreateButton({
-   Name = "MM2",
+   Name = "🔫MM2🔪",
    Callback = function()
         loadstring(game:HttpGet('https://raw.githubusercontent.com/OnyxHub-New/OnyxHub/refs/heads/main/mm2'))()
    end,
 })
 
 GameScriptsTab:CreateButton({
-   Name = "JailBreak AutoFarm",
+   Name = "👮JailBreak AutoFarm👮",
    Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/BlitzIsKing/UniversalFarm/main/Loader/Regular"))()
    end,
 })
 
 local Button = GameScriptsTab:CreateButton({
-   Name = "Notoriety",
+   Name = "💰Notoriety💰",
    Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/CasperFlyModz/discord.gg-rips/main/Loader.lua"))()
    end,
@@ -383,4 +383,11 @@ Rayfield:Notify({
    Content = "BskHub Univeral",
    Duration = 5,
    Image = 1419482330208141434,
+})
+
+local Button = GameScriptsTab:CreateButton({
+   Name = "🪖WarTycoon🪖",
+   Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/CasperFlyModz/discord.gg-rips/main/WarTycoon.lua"))()
+   end,
 })
