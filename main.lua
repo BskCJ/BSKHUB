@@ -385,9 +385,27 @@ Rayfield:Notify({
    Image = 1419482330208141434,
 })
 
+-- =========================
+-- Theme Selector
+-- =========================
+
+
 local Button = GameScriptsTab:CreateButton({
-   Name = "💣WarTycoon💣",
+   Name = "💥Central Streets💥",
    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/CasperFlyModz/discord.gg-rips/main/WarTycoon.lua"))()
+        loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/d5a23df5ad3b3f5dfae91c0b384e564a.lua"))()
    end,
+})
+
+local Button = GameScriptsTab:CreateButton({
+   Name = "🌴99-Nights-In-The-Forrest🌴",
+   Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Backwoodsix/Cobra.gg-99-nights-in-the-Forrest-FREE-keyless-/refs/heads/main/.lua", true))()
+   end,
+})
+
+local Button = GameScriptsTab:CreateButton({
+   Name = "🌿GrowAGarden🌿",
+   Callback = function()
+        loadstring(game:HttpGet("https://obj.wearedevs.net/197196/scripts/Grow%20a%20Garden%20Script%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20Pet%20Spawner%20%20Seed%20%20Spawner%20%20Egg%20Spawner%20And%20More%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20Dark%20Spawner.lua")) end,
 })
