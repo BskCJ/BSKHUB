@@ -409,3 +409,10 @@ local Button = GameScriptsTab:CreateButton({
    Callback = function()
         loadstring(game:HttpGet("https://obj.wearedevs.net/197196/scripts/Grow%20a%20Garden%20Script%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20Pet%20Spawner%20%20Seed%20%20Spawner%20%20Egg%20Spawner%20And%20More%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20Dark%20Spawner.lua")) end,
 })
+
+local Button = GameScriptsTab:CreateButton({
+   Name = "🎯Rivals🎯",
+   Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/CasperFlyModz/discord.gg-rips/main/Rivals.lua"))()
+   end,
+})
