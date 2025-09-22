@@ -423,3 +423,49 @@ local Button = MiscTab:CreateButton({
         loadstring(game:HttpGet("https://raw.githubusercontent.com/BskCJ/BSKHUB/main/BSKHUB.lua"))()
    end,
 })
+
+local Button = GameScriptsTab:CreateButton({
+   Name = "BloxyBingo",
+   Callback = function()
+        -- made by coressed
+
+local SubContainer = game:GetService("Players").LocalPlayer.PlayerGui.Bingo.StaticDisplayArea.Cards.PlayerArea.Cards.Container.SubContainer
+
+function firebutton(button)
+	if button then
+		for _, signal in pairs(getconnections(button.MouseButton1Click)) do pcall(function() signal:Fire() end) end
+		for _, signal in pairs(getconnections(button.MouseButton1Down)) do pcall(function() signal:Fire() end) end
+		for _, signal in pairs(getconnections(button.Activated)) do pcall(function() signal:Fire() end) end
+	end
+end
+
+while true do
+	wait(1)
+
+	local Cards
+	if SubContainer:FindFirstChild("Blocks") then
+		Cards = SubContainer.Blocks.Block
+	else
+		Cards = SubContainer.VerticalScroll.Cards
+	end
+
+	local BingoButton = SubContainer.Buttons.ClaimButton
+
+	if Cards and BingoButton then
+		for _, card in pairs(Cards:GetChildren()) do
+			if card:IsA("Frame") and card:FindFirstChild("Content") and card.Content:FindFirstChild("Numbers") then
+				for _, button in pairs(card.Content.Numbers:GetChildren()) do
+					firebutton(button)
+					wait()
+				end
+
+				if card:FindFirstChild("ToGo") and card.ToGo.ToGoText.Text == "BINGO!" then
+					firebutton(BingoButton)
+				end
+			end
+		end
+	end
+end
+
+   end,
+})
