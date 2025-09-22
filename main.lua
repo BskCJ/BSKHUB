@@ -386,7 +386,7 @@ Rayfield:Notify({
 })
 
 local Button = GameScriptsTab:CreateButton({
-   Name = "🪖WarTycoon🪖",
+   Name = "💣WarTycoon💣",
    Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/CasperFlyModz/discord.gg-rips/main/WarTycoon.lua"))()
    end,
