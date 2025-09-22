@@ -377,3 +377,10 @@ local Button = GameScriptsTab:CreateButton({
         loadstring(game:HttpGet("https://raw.githubusercontent.com/CasperFlyModz/discord.gg-rips/main/Loader.lua"))()
    end,
 })
+
+Rayfield:Notify({
+   Title = "Script Executed",
+   Content = "BskHub Univeral",
+   Duration = 5,
+   Image = 1419482330208141434,
+})
