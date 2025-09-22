@@ -423,27 +423,3 @@ local Button = MiscTab:CreateButton({
         loadstring(game:HttpGet("https://raw.githubusercontent.com/BskCJ/BSKHUB/main/BSKHUB.lua"))()
    end,
 })
-
--- =========================
--- Game Scripts Tab Search
--- =========================
-
-local searchBox = GameScriptsTab:CreateInput({
-    Name = "Search Scripts",
-    PlaceholderText = "Type to search...",
-    RemoveTextAfterFocusLost = false,
-    Callback = function(Value)
-        local searchText = Value:lower()
-        -- Loop through all buttons in the tab and show/hide them based on the search
-        for _, obj in pairs(GameScriptsTab.Objects) do
-            if obj.Type == "Button" then
-                local name = obj.Instance.Name:lower()
-                if name:find(searchText) then
-                    obj.Instance.Visible = true
-                else
-                    obj.Instance.Visible = false
-                end
-            end
-        end
-    end
-})
