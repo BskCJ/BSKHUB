@@ -580,7 +580,7 @@ do
 
     Tabs.Bots:AddParagraph({
         Title = string.format("%s 🔥FREE🔥", string.format(MonthlyLabels[os.date("*t").month], "BskCJ Aimbot")),
-        Content = "✨Universal Aim Assist Framework✨\nhttps://github.com/ttwizz/Open-Aimbot"
+        Content = "✨BskCJ Creation"
     })
 
     local SpinBotSection = Tabs.Bots:AddSection("SpinBot")
