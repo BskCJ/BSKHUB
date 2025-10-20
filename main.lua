@@ -673,10 +673,3 @@ local Button = GameScriptsTab:CreateButton({
         loadstring(game:HttpGet("https://raw.githubusercontent.com/CasperFlyModz/discord.gg-rips/main/Rivals.lua"))()
    end,
 })
-
-local Button = MiscTab:CreateButton({
-   Name = "Fly(F To Enable And Disable)",
-   Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/BskCJ/BSKHUB/main/BSKHUB.lua"))()
-   end,
-})
