@@ -1,21 +1,40 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
--- =========================
--- Window Initialization
--- =========================
 local Window = Rayfield:CreateWindow({
-    Name = "BSK UNIVERSAL HUB",
-    Icon = 0,
-    LoadingTitle = "BSK HUB",
-    LoadingSubtitle = "by bskcj",
-    ShowText = "Rayfield",
-    Theme = "Bloom",
-    ToggleUIKeybind = "K",
-    DisableRayfieldPrompts = false,
-    DisableBuildWarnings = false,
-    ConfigurationSaving = {Enabled = false},
-    Discord = {Enabled = true, Invite = "https://discord.gg/qFXqdYMgw7", RememberJoins = true},
-    KeySystem = false -- Disabled key system for simplicity
+   Name = "BSKHUB UNIVERSAL",
+   Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
+   LoadingTitle = "BskHub",
+   LoadingSubtitle = "by bskcj",
+   ShowText = "BSKHUB", -- for mobile users to unhide rayfield, change if you'd like
+   Theme = "Bloom", -- Check https://docs.sirius.menu/rayfield/configuration/themes
+
+   ToggleUIKeybind = "K", -- The keybind to toggle the UI visibility (string like "K" or Enum.KeyCode)
+
+   DisableRayfieldPrompts = false,
+   DisableBuildWarnings = false, -- Prevents Rayfield from warning when the script has a version mismatch with the interface
+
+   ConfigurationSaving = {
+      Enabled = false,
+      FolderName = nil, -- Create a custom folder for your hub/game
+      FileName = "BSKHUBUNIVERSALFILE"
+   },
+
+   Discord = {
+      Enabled = false, -- Prompt the user to join your Discord server if their executor supports it
+      Invite = "noinvitelink", -- The Discord invite code, do not include discord.gg/. E.g. discord.gg/ ABCD would be ABCD
+      RememberJoins = true -- Set this to false to make them join the discord every time they load it up
+   },
+
+   KeySystem = false, -- Set this to true to use our key system
+   KeySettings = {
+      Title = "🔑BskHub Key System🔑",
+      Subtitle = "Key System",
+      Note = "Key In Discord", -- Use this to tell the user how to get a key
+      FileName = "Key", -- It is recommended to use something unique as other scripts using Rayfield may overwrite your key file
+      SaveKey = false, -- The user's key will be saved, but if you change the key, they will be unable to use your script
+      GrabKeyFromSite = true, -- If this is true, set Key below to the RAW site you would like Rayfield to get the key from
+      Key = {"https://pastebin.com/raw/kii8F9UV"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
+   }
 })
 
 -- =========================
@@ -70,7 +89,7 @@ end)
 
 -- WalkSpeed
 ClientTab:CreateSlider({
-    Name = "WalkSpeed",
+    Name = "🏃WalkSpeed🏃",
     Range = {0,500},
     Increment = 1,
     Suffix = "Speed",
@@ -86,7 +105,7 @@ ClientTab:CreateSlider({
 
 -- JumpPower
 ClientTab:CreateSlider({
-    Name = "JumpPower",
+    Name = "🚀JumpPower🚀",
     Range = {1,500},
     Increment = 1,
     Suffix = "Power",
@@ -138,7 +157,7 @@ local function restoreLighting()
 end
 
 ClientTab:CreateToggle({
-    Name = "Fullbright",
+    Name = "🔦Fullbright🔦",
     CurrentValue = false,
     Flag = "FullbrightToggle",
     Callback = function(Value)
@@ -170,50 +189,297 @@ ClientTab:CreateToggle({
 -- =========================
 -- Aimbot Tab
 -- =========================
-local AimbotTab = Window:CreateTab("Aimbot", nil)
-local Section = AimbotTab:CreateSection("Aimbot")
 
-local aimbotLoaded = false
-local Aimbot = nil
+local RunService = game:GetService("RunService")
+local players = game:GetService("Players")
+local workspace = game:GetService("Workspace")
+local plr = players.LocalPlayer
+local camera = workspace.CurrentCamera
+local mouse = plr:GetMouse()
 
-AimbotTab:CreateToggle({
-    Name = "Universal Aimbot",
-    CurrentValue = false,
-    Flag = "Toggle1",
-    Callback = function(Value)
-        if Value then
-            if not aimbotLoaded then
-                local ok, result = pcall(function()
-                    return loadstring(game:HttpGet("https://raw.githubusercontent.com/Exunys/Aimbot-V3/main/src/Aimbot.lua"))()
-                end)
-                if ok and result then
-                    Aimbot = result
-                    if type(Aimbot.Load) == "function" then
-                        Aimbot.Load() -- initialize
+--> [< Variables >] <--
+
+local hue = 0
+local rainbowFov = false
+local rainbowSpeed = 0.005
+
+local aimFov = 100
+local aiming = false
+local predictionStrength = 0.065
+local smoothing = 0.05
+
+local aimbotEnabled = false
+local wallCheck = true
+local stickyAimEnabled = false
+local teamCheck = false
+local healthCheck = false
+local minHealth = 0
+
+local circleColor = Color3.fromRGB(255, 0, 0)
+local targetedCircleColor = Color3.fromRGB(0, 255, 0)
+
+--> [< Variables >] <--
+
+
+
+local Aimbot = Window:CreateTab("Aimbot 🎯")
+
+local fovCircle = Drawing.new("Circle")
+fovCircle.Thickness = 2
+fovCircle.Radius = aimFov
+fovCircle.Filled = false
+fovCircle.Color = circleColor
+fovCircle.Visible = false
+
+local currentTarget = nil
+
+local function checkTeam(player)
+    if teamCheck and player.Team == plr.Team then
+        return true
+    end
+    return false
+end
+
+local function checkWall(targetCharacter)
+    local targetHead = targetCharacter:FindFirstChild("Head")
+    if not targetHead then return true end
+
+    local origin = camera.CFrame.Position
+    local direction = (targetHead.Position - origin).unit * (targetHead.Position - origin).magnitude
+    local raycastParams = RaycastParams.new()
+    raycastParams.FilterDescendantsInstances = {plr.Character, targetCharacter}
+    raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+
+    local raycastResult = workspace:Raycast(origin, direction, raycastParams)
+    return raycastResult and raycastResult.Instance ~= nil
+end
+
+local function getTarget()
+    local nearestPlayer = nil
+    local shortestCursorDistance = aimFov
+    local shortestPlayerDistance = math.huge
+    local cameraPos = camera.CFrame.Position
+
+    for _, player in ipairs(players:GetPlayers()) do
+        if player ~= plr and player.Character and player.Character:FindFirstChild("Head") and not checkTeam(player) then
+            if player.Character.Humanoid.Health >= minHealth or not healthCheck then
+                local head = player.Character.Head
+                local headPos = camera:WorldToViewportPoint(head.Position)
+                local screenPos = Vector2.new(headPos.X, headPos.Y)
+                local mousePos = Vector2.new(mouse.X, mouse.Y)
+                local cursorDistance = (screenPos - mousePos).Magnitude
+                local playerDistance = (head.Position - cameraPos).Magnitude
+
+                if cursorDistance < shortestCursorDistance and headPos.Z > 0 then
+                    if not checkWall(player.Character) or not wallCheck then
+                        if playerDistance < shortestPlayerDistance then
+                            shortestPlayerDistance = playerDistance
+                            shortestCursorDistance = cursorDistance
+                            nearestPlayer = player
+                        end
                     end
-                    if Aimbot.Settings then
-                        Aimbot.Settings.Enabled = false -- start disabled
-                    end
-                    aimbotLoaded = true
-                else
-                    warn("Aimbot failed to load:", result)
                 end
-            end
-            if Aimbot and Aimbot.Settings then
-                Aimbot.Settings.Enabled = true -- enable
-            end
-        else
-            if Aimbot and Aimbot.Settings then
-                Aimbot.Settings.Enabled = false -- disable
             end
         end
     end
+
+    return nearestPlayer
+end
+
+local function predict(player)
+    if player and player.Character and player.Character:FindFirstChild("Head") and player.Character:FindFirstChild("HumanoidRootPart") then
+        local head = player.Character.Head
+        local hrp = player.Character.HumanoidRootPart
+        local velocity = hrp.Velocity
+        local predictedPosition = head.Position + (velocity * predictionStrength)
+        return predictedPosition
+    end
+    return nil
+end
+
+local function smooth(from, to)
+    return from:Lerp(to, smoothing)
+end
+
+local function aimAt(player)
+    local predictedPosition = predict(player)
+    if predictedPosition then
+        if player.Character.Humanoid.Health >= minHealth or not healthCheck then
+            local targetCFrame = CFrame.new(camera.CFrame.Position, predictedPosition)
+            camera.CFrame = smooth(camera.CFrame, targetCFrame)
+        end
+    end
+end
+
+RunService.RenderStepped:Connect(function()
+    if aimbotEnabled then
+        local offset = 50
+        fovCircle.Position = Vector2.new(mouse.X, mouse.Y + offset)
+
+        if rainbowFov then
+            hue = hue + rainbowSpeed
+            if hue > 1 then hue = 0 end
+            fovCircle.Color = Color3.fromHSV(hue, 1, 1)
+        else
+            if aiming and currentTarget then
+                fovCircle.Color = targetedCircleColor
+            else
+                fovCircle.Color = circleColor
+            end
+        end
+
+        if aiming then
+            if stickyAimEnabled and currentTarget then
+                local headPos = camera:WorldToViewportPoint(currentTarget.Character.Head.Position)
+                local screenPos = Vector2.new(headPos.X, headPos.Y)
+                local cursorDistance = (screenPos - Vector2.new(mouse.X, mouse.Y)).Magnitude
+
+                if cursorDistance > aimFov or (wallCheck and checkWall(currentTarget.Character)) or checkTeam(currentTarget) then
+                    currentTarget = nil
+                end
+            end
+
+            if not stickyAimEnabled or not currentTarget then
+                currentTarget = getTarget()
+            end
+
+            if currentTarget then
+                aimAt(currentTarget)
+            end
+        else
+            currentTarget = nil
+        end
+    end
+end)
+
+mouse.Button2Down:Connect(function()
+    if aimbotEnabled then
+        aiming = true
+    end
+end)
+
+mouse.Button2Up:Connect(function()
+    if aimbotEnabled then
+        aiming = false
+    end
+end)
+
+local aimbot = Aimbot:CreateToggle({
+    Name = "Aimbot",
+    CurrentValue = false,
+    Flag = "Aimbot",
+    Callback = function(Value)
+        aimbotEnabled = Value
+        fovCircle.Visible = Value
+    end
 })
 
--- Ensure Aimbot starts OFF
-if Aimbot and Aimbot.Settings then
-    Aimbot.Settings.Enabled = false
-end
+local smoothingslider = Aimbot:CreateSlider({
+    Name = "Smoothing",
+    Range = {0, 100},
+    Increment = 1,
+    CurrentValue = 5,
+    Flag = "Smoothing",
+    Callback = function(Value)
+        smoothing = 1 - (Value / 100)
+    end,
+})
+
+local predictionstrength = Aimbot:CreateSlider({
+    Name = "Prediction Strength",
+    Range = {0, 0.2},
+    Increment = 0.001,
+    CurrentValue = 0.065,
+    Flag = "PredictionStrength",
+    Callback = function(Value)
+        predictionStrength = Value
+    end,
+})
+
+local wallcheck = Aimbot:CreateToggle({
+    Name = "Wall Check",
+    CurrentValue = true,
+    Flag = "WallCheck",
+    Callback = function(Value)
+        wallCheck = Value
+    end
+})
+
+local stickyaim = Aimbot:CreateToggle({
+    Name = "Sticky Aim",
+    CurrentValue = false,
+    Flag = "StickyAim",
+    Callback = function(Value)
+        stickyAimEnabled = Value
+    end
+})
+
+local teamchecktoggle = Aimbot:CreateToggle({
+    Name = "Team Check",
+    CurrentValue = false,
+    Flag = "TeamCheck",
+    Callback = function(Value)
+        teamCheck = Value
+    end
+})
+
+local healthchecktoggle = Aimbot:CreateToggle({
+    Name = "Health Check",
+    CurrentValue = false,
+    Flag = "HealthCheck",
+    Callback = function(Value)
+        healthCheck = Value
+    end
+})
+
+local minhealth = Aimbot:CreateSlider({
+    Name = "Min Health",
+    Range = {0, 100},
+    Increment = 1,
+    CurrentValue = 0,
+    Flag = "MinHealth",
+    Callback = function(Value)
+        minHealth = Value
+    end,
+})
+
+local aimbotfov = Aimbot:CreateSlider({
+    Name = "Aimbot Fov",
+    Range = {0, 1000},
+    Increment = 1,
+    CurrentValue = 100,
+    Flag = "AimbotFov",
+    Callback = function(Value)
+        aimFov = Value
+        fovCircle.Radius = aimFov
+    end,
+})
+
+local circlecolor = Aimbot:CreateColorPicker({
+    Name = "Fov Color",
+    Color = circleColor,
+    Callback = function(Color)
+        circleColor = Color
+        fovCircle.Color = Color
+    end
+})
+
+local targetedcirclecolor = Aimbot:CreateColorPicker({
+    Name = "Targeted Fov Color",
+    Color = targetedCircleColor,
+    Callback = function(Color)
+        targetedCircleColor = Color
+    end
+})
+
+local circlerainbow = Aimbot:CreateToggle({
+    Name = "Rainbow Fov",
+    CurrentValue = false,
+    Flag = "RainbowFov",
+    Callback = function(Value)
+        rainbowFov = Value
+    end
+})
 
 -- =========================
 -- Misc Tab
@@ -231,7 +497,6 @@ MiscTab:CreateToggle({
         clickTpEnabled = Value
     end
 })
-
 UserInputService.InputBegan:Connect(function(input)
     if clickTpEnabled and input.UserInputType == Enum.UserInputType.MouseButton1 then
         local mouse = localPlayer:GetMouse()
@@ -257,7 +522,6 @@ local ESPSection = ESPTab:CreateSection("ESP Menu")
 
 local espEnabled = false
 local espObjects = {}
-
 local function applyESP(character)
     if character and character:FindFirstChild("HumanoidRootPart") then
         local highlight = Instance.new("Highlight")
@@ -344,22 +608,68 @@ local GameScriptsTab = Window:CreateTab("GameScripts", nil)
 local Section = GameScriptsTab:CreateSection("KEYLESS/WORKING")
 
 GameScriptsTab:CreateButton({
-   Name = "BladeBall",
+   Name = "⚔️BladeBall⚔️",
    Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/Akash1al/Blade-Ball-Updated-Script/refs/heads/main/Blade-Ball-Script"))()
    end,
 })
 
 GameScriptsTab:CreateButton({
-   Name = "MM2",
+   Name = "🔫MM2🔪",
    Callback = function()
         loadstring(game:HttpGet('https://raw.githubusercontent.com/OnyxHub-New/OnyxHub/refs/heads/main/mm2'))()
    end,
 })
 
 GameScriptsTab:CreateButton({
-   Name = "JailBreak AutoFarm",
+   Name = "👮JailBreak AutoFarm👮",
    Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/BlitzIsKing/UniversalFarm/main/Loader/Regular"))()
+   end,
+})
+
+local Button = GameScriptsTab:CreateButton({
+   Name = "💰Notoriety💰",
+   Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/CasperFlyModz/discord.gg-rips/main/Loader.lua"))()
+   end,
+})
+
+Rayfield:Notify({
+   Title = "Script Executed",
+   Content = "BskHub Univeral",
+   Duration = 5,
+   Image = 1419482330208141434,
+})
+
+-- =========================
+-- Theme Selector
+-- =========================
+
+
+local Button = GameScriptsTab:CreateButton({
+   Name = "💥Central Streets💥",
+   Callback = function()
+        loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/d5a23df5ad3b3f5dfae91c0b384e564a.lua"))()
+   end,
+})
+
+local Button = GameScriptsTab:CreateButton({
+   Name = "🌴99-Nights-In-The-Forrest🌴",
+   Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Backwoodsix/Cobra.gg-99-nights-in-the-Forrest-FREE-keyless-/refs/heads/main/.lua", true))()
+   end,
+})
+
+local Button = GameScriptsTab:CreateButton({
+   Name = "🌿GrowAGarden🌿",
+   Callback = function()
+        loadstring(game:HttpGet("https://obj.wearedevs.net/197196/scripts/Grow%20a%20Garden%20Script%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20Pet%20Spawner%20%20Seed%20%20Spawner%20%20Egg%20Spawner%20And%20More%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20Dark%20Spawner.lua")) end,
+})
+
+local Button = GameScriptsTab:CreateButton({
+   Name = "🎯Rivals🎯",
+   Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/CasperFlyModz/discord.gg-rips/main/Rivals.lua"))()
    end,
 })
